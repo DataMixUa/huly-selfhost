@@ -1,50 +1,50 @@
 services:
   traefik:
     restart: unless-stopped
-    image: "traefik:v2.10"
-    container_name: "traefik"
+    image: 'traefik:v2.10'
+    container_name: 'traefik'
     ports:
-      - "80:80"
-      - "443:443"
-      - "3333:3333"
-      - "3078:3078"
+      - '80:80'
+      - '443:443'
+      - '3333:3333'
+      - '3078:3078'
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
       - ./letsencrypt:/letsencrypt
     networks:
       - traefik-public
     command:
-      - "--log.level=DEBUG" # set to INFO for production
-      - "--api.insecure=false"
-      - "--api.dashboard=true"
-      - "--global.sendAnonymousUsage=false"
-      - "--global.checkNewVersion=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=traefik-public"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.transactor.address=:3333" # for transactor wss
-      - "--entrypoints.collaborator.address=:3078" # for collaborator wss
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.caserver=http://acme-staging-v02.api.letsencrypt.org/directory" # For testing, comment out for production
+      - '--log.level=DEBUG' # set to INFO for production
+      - '--api.insecure=false'
+      - '--api.dashboard=true'
+      - '--global.sendAnonymousUsage=false'
+      - '--global.checkNewVersion=false'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=traefik-public'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.transactor.address=:3333' # for transactor wss
+      - '--entrypoints.collaborator.address=:3078' # for collaborator wss
+      - '--entrypoints.web.http.redirections.entryPoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entryPoint.scheme=https'
+      - '--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}'
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory' # For testing, comment out for production
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`${SERVER_ADDRESS}`) && (PathPrefix(`/api`) || PathPrefix(`/traefik`))"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`${SERVER_ADDRESS}`) && (PathPrefix(`/api`) || PathPrefix(`/traefik`))'
+      - 'traefik.http.routers.traefik.service=api@internal'
+      - 'traefik.http.routers.traefik.entrypoints=websecure'
       # strip prefix for traefik dashboard
-      - "traefik.http.routers.traefik.middlewares=strip-prefix-traefik"
-      - "traefik.http.middlewares.strip-prefix-traefik.stripprefix.prefixes=/traefik"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+      - 'traefik.http.routers.traefik.middlewares=strip-prefix-traefik'
+      - 'traefik.http.middlewares.strip-prefix-traefik.stripprefix.prefixes=/traefik'
+      - 'traefik.http.routers.traefik.tls=true'
+      - 'traefik.http.routers.traefik.tls.certresolver=myresolver'
 
   mongodb:
-    image: "mongo:7-jammy"
+    image: 'mongo:7-jammy'
     container_name: mongodb
     environment:
       - PUID=1000
@@ -56,7 +56,7 @@ services:
       - internal-services
 
   elastic:
-    image: "elasticsearch:7.14.2"
+    image: 'elasticsearch:7.14.2'
     command: |
       /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;
       /usr/local/bin/docker-entrypoint.sh eswrapper"
@@ -78,7 +78,7 @@ services:
       - internal-services
 
   minio:
-    image: "minio/minio"
+    image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
     volumes:
       - files:/data
@@ -99,14 +99,14 @@ services:
       - internal-services
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.rekoni.entrypoints=websecure"
-      - "traefik.http.services.rekoni.loadbalancer.server.port=4004"
-      - "traefik.http.routers.rekoni.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/rekoni`)"
-      - "traefik.http.routers.rekoni.middlewares=rekoni-stripprefix"
-      - "traefik.http.middlewares.rekoni-stripprefix.stripprefix.prefixes=/rekoni"
-      - "traefik.http.routers.rekoni.tls=true"
-      - "traefik.http.routers.rekoni.tls.certresolver=myresolver"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.rekoni.entrypoints=websecure'
+      - 'traefik.http.services.rekoni.loadbalancer.server.port=4004'
+      - 'traefik.http.routers.rekoni.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/rekoni`)'
+      - 'traefik.http.routers.rekoni.middlewares=rekoni-stripprefix'
+      - 'traefik.http.middlewares.rekoni-stripprefix.stripprefix.prefixes=/rekoni'
+      - 'traefik.http.routers.rekoni.tls=true'
+      - 'traefik.http.routers.rekoni.tls.certresolver=myresolver'
 
   transactor:
     image: hardcoreeng/transactor:${HULY_VERSION}
@@ -133,13 +133,12 @@ services:
       - internal-services
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.transactor.entrypoints=transactor"
-      - "traefik.http.routers.transactor.rule=Host(`${SERVER_ADDRESS}`)"
-      - "traefik.http.services.transactor.loadbalancer.server.port=3333"
-      - "traefik.http.routers.transactor.tls=true"
-      - "traefik.http.routers.transactor.tls.certresolver=myresolver"
-
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.transactor.entrypoints=transactor'
+      - 'traefik.http.routers.transactor.rule=Host(`${SERVER_ADDRESS}`)'
+      - 'traefik.http.services.transactor.loadbalancer.server.port=3333'
+      - 'traefik.http.routers.transactor.tls=true'
+      - 'traefik.http.routers.transactor.tls.certresolver=myresolver'
 
   collaborator:
     image: hardcoreeng/collaborator:${HULY_VERSION}
@@ -158,12 +157,12 @@ services:
       - internal-services
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.collaborator.entrypoints=collaborator"
-      - "traefik.http.services.collaborator.loadbalancer.server.port=3078"
-      - "traefik.http.routers.collaborator.rule=Host(`${SERVER_ADDRESS}`)"
-      - "traefik.http.routers.collaborator.tls=true"
-      - "traefik.http.routers.collaborator.tls.certresolver=myresolver"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.collaborator.entrypoints=collaborator'
+      - 'traefik.http.services.collaborator.loadbalancer.server.port=3078'
+      - 'traefik.http.routers.collaborator.rule=Host(`${SERVER_ADDRESS}`)'
+      - 'traefik.http.routers.collaborator.tls=true'
+      - 'traefik.http.routers.collaborator.tls.certresolver=myresolver'
 
   account:
     image: hardcoreeng/account:${HULY_VERSION}
@@ -186,14 +185,14 @@ services:
       - internal-services
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.account.entrypoints=websecure"
-      - "traefik.http.services.account.loadbalancer.server.port=3000"
-      - "traefik.http.routers.account.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/accounts`)"
-      - "traefik.http.routers.account.middlewares=account-stripprefix"
-      - "traefik.http.middlewares.account-stripprefix.stripprefix.prefixes=/accounts"
-      - "traefik.http.routers.account.tls=true"
-      - "traefik.http.routers.account.tls.certresolver=myresolver"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.account.entrypoints=websecure'
+      - 'traefik.http.services.account.loadbalancer.server.port=3000'
+      - 'traefik.http.routers.account.rule=Host(`${SERVER_ADDRESS}`) && PathPrefix(`/accounts`)'
+      - 'traefik.http.routers.account.middlewares=account-stripprefix'
+      - 'traefik.http.middlewares.account-stripprefix.stripprefix.prefixes=/accounts'
+      - 'traefik.http.routers.account.tls=true'
+      - 'traefik.http.routers.account.tls.certresolver=myresolver'
 
   front:
     image: hardcoreeng/front:${HULY_VERSION}
@@ -222,12 +221,12 @@ services:
       - internal-services
       - traefik-public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.front.entrypoints=websecure"
-      - "traefik.http.services.front.loadbalancer.server.port=8080"
-      - "traefik.http.routers.front.rule=Host(`${SERVER_ADDRESS}`)"
-      - "traefik.http.routers.front.tls=true"
-      - "traefik.http.routers.front.tls.certresolver=myresolver"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.front.entrypoints=websecure'
+      - 'traefik.http.services.front.loadbalancer.server.port=8080'
+      - 'traefik.http.routers.front.rule=Host(`${SERVER_ADDRESS}`)'
+      - 'traefik.http.routers.front.tls=true'
+      - 'traefik.http.routers.front.tls.certresolver=myresolver'
 
 networks:
   traefik-public:
